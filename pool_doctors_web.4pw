@@ -46,7 +46,7 @@
   </Settings>
   <LanguageList version="1.0"/>
   <PlatformList version="1.0"/>
-  <Group label="pool_doctors_web" language="Genero" targetDirectory="$(ProjectDir)">
+  <Group environment="value:FGLPROFILE=./fglprofile" label="pool_doctors_web" language="Genero" targetDirectory="$(ProjectDir)">
     <Application binaryName="pool_doctors_web" id="1510450639" label="pool_doctors_web">
       <File filePath="fglprofile"/>
       <File filePath="pool_doctors_enquiry.4gl"/>
