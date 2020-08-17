@@ -1,69 +1,71 @@
-action defaults
-action refresh (text="Refresh")
-end
+ACTION DEFAULTS
+ACTION REFRESH (text="Refresh")
+END
 
-layout (text="Pool Doctors Enquiry")
-hbox
-group (text="Job List")
-table
+LAYOUT (TEXT="Pool Doctors Enquiry")
+
+HBOX (SPLITTER)
+-- Left hand column is list of jobs
+GROUP (TEXT="Job List")
+TABLE
 {
 [jl01       ][jl02       |jl03                           ]
 }
-end
-end
+END
+END
 
-vbox
-group (text="Job")
-grid
+-- Right hand column is collapsible groups with detail about each job
+VBOX
+GROUP (TEXT="Job",STYLE="collapsible open")
+GRID
 {
 Code         [jh01       ]
 Date Created [jh03       ]
 Status       [jh06       ]
 Customer     [jh02       ][jh02a                                 ]
+Notes        [jh07                                               ]
+             [                                                   ]
+}
+END #grid
+END #group
+
+GROUP (text="Customer Details",STYLE="collapsible closed")
+GRID
+{
 Contact      [jh09                                               ]
 Address      [jh04a                                              ]
              [jh04b                                              ]
              [jh04c                                              ]
              [jh04d                                              ]
 Phone        [jh05                                               ]
-Notes        [jh07                                               ]
-             [                                                   ]
-Name Signed  [jh08                                               ]
-Date Signed  [jh11        ]
-Signature    [jh12                                               ]
-             [                                                   ]
-
-
-
-
-
 }
-end #grid
-end #group
-folder
-page (text="Job Detail")
-table
+END #grid
+END #group
+
+
+GROUP (text="Job Detail",STYLE="collapsible closed")
+TABLE
 {
 [jd01      ][jd02][jd03       ][jd04       ][jd05      ]
 }
-end # table
-end #page
+END # table
+END #group
 
-page (text="Job Note")
-table
+GROUP (text="Job Note",STYLE="collapsible closed")
+TABLE
 {
 [jn01       ][jn02][jn03                 ][jn04      ]
 }
-end # table
-end #page
+END # table
+END #group
 
-page (text="Job Photo")
-hbox
-table
+GROUP (text="Job Photo",STYLE="collapsible closed")
+HBOX
+TABLE
 {
 [jp01       ][jp02][jp03       ][jp04       ][jp05      ][jp06      ][jp07      ][jp08      ]
 }
-end # table
+END # table
 GRID
 {
 [p01                         ]
@@ -79,26 +81,39 @@ GRID
 }
 END #grid
 END #hbox
-end #page
+END #group
 
-page (text="Job Timesheet")
-table
+GROUP (TEXT="Job Timesheet",STYLE="collapsible closed")
+TABLE
 {
 [jt01       ][jt02][jt03       ][jt04       ][jt05       ][jt06                    ]
 }
-end # table
-end #page
+END # table
+END #group
 
-end #folder
+GROUP (TEXT="Signature",STYLE="collapsible closed")
+GRID
+{
+Name Signed  [jh08                                               ]
+Date Signed  [jh11        ]
+Signature    [jh12                                               ]
+             [                                                   ]
+}
+END #grid
+END #group
 END #vbox
 END #hbox
 END #layout
 
+
+
 ATTRIBUTES
+--List
 EDIT jl01 = formonly.cm_rep_list, TITLE="Rep Code";
 EDIT jl02 = formonly.jh_code_list, TITLE="Job Code";
 EDIT jl03 = formonly.cm_name_list, TITLE="Customer";
 
+-- Header
 EDIT jh01 = formonly.jh_code;
 EDIT jh02 = formonly.jh_customer;
 LABEL jh02a = formonly.cm_name;
@@ -115,41 +130,38 @@ EDIT jh09 = formonly.jh_contact;
 EDIT jh11 = formonly.jh_date_signed;
 TEXTEDIT jh12 = formonly.jh_signature;
 
-
-
-
-
+-- Detail
 EDIT jd01 = formonly.jd_code, HIDDEN, TITLE="Code";
 EDIT jd02 = formonly.jd_idx, TITLE="Line";
 EDIT jd03 = formonly.jd_product, TITLE="Product Code";
 EDIT jd04 = formonly.jd_qty, TITLE="Quantity";
 EDIT jd05 = formonly.jd_status, TITLE="Status";
 
+-- Notes
 EDIT jn01 = formonly.jn_code, HIDDEN, TITLE="Code";
 EDIT jn02 = formonly.jn_idx, TITLE="Line";
-textEDIT jn03 = formonly.jn_note, TITLE="Note";
+TEXTEDIT jn03 = formonly.jn_note, TITLE="Note";
 EDIT jn04 = formonly.jn_when, TITLE="When";
 
+-- Photo
 EDIT jp01 = formonly.jp_code, HIDDEN, TITLE="Code";
 EDIT jp02 = formonly.jp_idx, TITLE="Line";
 edit jp03 = formonly.jp_photo, TITLE="Filename", hidden;
 EDIT jp04 = formonly.jp_lat, TITLE="Latitude";
 EDIT jp05 = formonly.jp_lon, TITLE="Longitude";
 EDIT jp06 = formonly.jp_when, TITLE="When";
-edit jp07 = formonly.jp_photo_data, TITLE="Photo", hidden;
-textEDIT jp08 = formonly.jp_note, TITLE="Note";
-
+EDIT jp07 = formonly.jp_photo_data, TITLE="Photo", hidden;
+TEXTEDIT jp08 = formonly.jp_note, TITLE="Note";
 IMAGE p01 = formonly.show_photo,  AUTOSCALE, SIZEPOLICY=FIXED, WIDTH=200 PIXELS;
 
-
-
-
+-- Timeshet
 EDIT jt01 = formonly.jt_code, HIDDEN, TITLE="Code";
 EDIT jt02 = formonly.jt_idx, TITLE="Line";
 EDIT jt03 = formonly.jt_start, TITLE="Start";
 EDIT jt04 = formonly.jt_finish, TITLE="Finish";
-edit jt05 = formonly.jt_charge_code_id, TITLE="Charge Code Id";
-textEDIT jt06 = formonly.jt_note, TITLE="Note";
+EDIT jt05 = formonly.jt_charge_code_id, TITLE="Charge Code Id";
+TEXTEDIT jt06 = formonly.jt_note, TITLE="Note";
+
 
 
 INSTRUCTIONS

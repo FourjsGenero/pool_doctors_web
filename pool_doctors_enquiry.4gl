@@ -1,167 +1,142 @@
-schema pool_doctors
+SCHEMA pool_doctors
 
-type job_list_type record
-    cm_rep_list like customer.cm_rep,
-    jh_code_list like job_header.jh_code,
-    cm_name_list like customer.cm_name
-end record
+TYPE job_list_type RECORD
+    cm_rep_list LIKE customer.cm_rep,
+    jh_code_list LIKE job_header.jh_code,
+    cm_name_list LIKE customer.cm_name
+END RECORD
 
-define m_job_list_rec job_list_type
-define m_job_list_arr dynamic array of job_list_type
+DEFINE m_job_list_rec job_list_type
+DEFINE m_job_list_arr DYNAMIC ARRAY OF job_list_type
 
-define m_job_detail_rec record like job_detail.*
-define m_job_detail_arr dynamic array of record like job_detail.*
+DEFINE m_job_detail_rec RECORD LIKE job_detail.*
+DEFINE m_job_detail_arr DYNAMIC ARRAY OF RECORD LIKE job_detail.*
 
-define m_job_note_rec record like job_note.*
-define m_job_note_arr dynamic array of record like job_note.*
+DEFINE m_job_note_rec RECORD LIKE job_note.*
+DEFINE m_job_note_arr DYNAMIC ARRAY OF RECORD LIKE job_note.*
 
-define m_job_photo_rec record like job_photo.*
-define m_job_photo_arr dynamic array of record like job_photo.*
+DEFINE m_job_photo_rec RECORD LIKE job_photo.*
+DEFINE m_job_photo_arr DYNAMIC ARRAY OF RECORD LIKE job_photo.*
 
-define m_job_timesheet_rec record like job_timesheet.*
-define m_job_timesheet_arr dynamic array of record like job_timesheet.*
+DEFINE m_job_timesheet_rec RECORD LIKE job_timesheet.*
+DEFINE m_job_timesheet_arr DYNAMIC ARRAY OF RECORD LIKE job_timesheet.*
 
+MAIN
+    DEFINE l_exit BOOLEAN
 
+    DEFER INTERRUPT
+    DEFER QUIT
+    OPTIONS FIELD ORDER FORM
+    OPTIONS INPUT WRAP
 
-main
-define i integer
-define l_exit boolean
+    CALL ui.Interface.loadStyles("pool_doctors_enquiry.4st")
+    CLOSE WINDOW screen
 
-    close window screen
-    connect to "pool_doctors"
-    open window w with form "pool_doctors_enquiry"
+    CONNECT TO "pool_doctors"
 
-    let l_exit = false
+    OPEN WINDOW w WITH FORM "pool_doctors_enquiry"
 
-    while not l_exit
-    
-        declare job_list_curs cursor for
-        select cm_rep, jh_code, cm_name
-        from job_header, customer
-        where jh_customer = cm_code
-        order by cm_rep, jh_code
+    LET l_exit = FALSE
 
-        call m_job_list_arr.clear()
-        foreach job_list_curs into m_job_list_rec.*
-            let m_job_list_arr[m_job_list_arr.getLength()+1].* = m_job_list_rec.*
-        end foreach
+    WHILE NOT l_exit
 
-        dialog attributes(unbuffered)
-            display array m_job_list_arr to job_list.*
-                before row 
-                    call refresh_job(m_job_list_arr[arr_curr()].jh_code_list)
-                    call show_photo(m_job_photo_arr[1].jp_code,m_job_photo_arr[1].jp_idx)
-            end display
-            display array m_job_detail_arr to job_detail.*
-            end display
-            display array m_job_note_arr to job_note.*
-            end display
-            display array m_job_photo_arr to job_photo.*
-                before row
-                    call show_photo(m_job_photo_arr[arr_curr()].jp_code,m_job_photo_arr[arr_curr()].jp_idx)
-            end display
-            display array m_job_timesheet_arr to job_timesheet.*
-            end display
+        DECLARE job_list_curs CURSOR FOR
+            SELECT cm_rep, jh_code, cm_name FROM job_header, customer WHERE jh_customer = cm_code ORDER BY cm_rep, jh_code
 
-	    on action refresh
-                exit dialog
-        
-            on action close
-	        let l_exit = true
-                exit dialog
-        end dialog
-    end while
-end main
+        CALL m_job_list_arr.clear()
+        FOREACH job_list_curs INTO m_job_list_rec.*
+            LET m_job_list_arr[m_job_list_arr.getLength() + 1].* = m_job_list_rec.*
+        END FOREACH
 
+        DIALOG ATTRIBUTES(UNBUFFERED)
+            DISPLAY ARRAY m_job_list_arr TO job_list.*
+                BEFORE ROW
+                    CALL refresh_job(m_job_list_arr[arr_curr()].jh_code_list)
+                    CALL show_photo(m_job_photo_arr[1].jp_code, m_job_photo_arr[1].jp_idx)
+            END DISPLAY
+            DISPLAY ARRAY m_job_detail_arr TO job_detail.*
+            END DISPLAY
+            DISPLAY ARRAY m_job_note_arr TO job_note.*
+            END DISPLAY
+            DISPLAY ARRAY m_job_photo_arr TO job_photo.*
+                BEFORE ROW
+                    CALL show_photo(m_job_photo_arr[arr_curr()].jp_code, m_job_photo_arr[arr_curr()].jp_idx)
+            END DISPLAY
+            DISPLAY ARRAY m_job_timesheet_arr TO job_timesheet.*
+            END DISPLAY
 
+            ON ACTION refresh
+                EXIT DIALOG
 
-function refresh_job(l_job_code)
-define l_job_code like job_header.jh_code
-define l_job_header record like job_header.*
-define l_customer record like customer.*
-define i integer
+            ON ACTION close
+                LET l_exit = TRUE
+                EXIT DIALOG
+        END DIALOG
+    END WHILE
+END MAIN
 
-    call m_job_detail_arr.clear()
-    call m_job_note_arr.clear()
-    call m_job_photo_arr.clear()
-    call m_job_timesheet_arr.clear()
+FUNCTION refresh_job(l_job_code)
+    DEFINE l_job_code LIKE job_header.jh_code
+    DEFINE l_job_header RECORD LIKE job_header.*
+    DEFINE l_customer RECORD LIKE customer.*
+
+    CALL m_job_detail_arr.clear()
+    CALL m_job_note_arr.clear()
+    CALL m_job_photo_arr.clear()
+    CALL m_job_timesheet_arr.clear()
 
     -- Job Header
-    select job_header.*, cm_name
-    into l_job_header.*, l_customer.cm_name
-    from job_header, customer
-    where jh_customer = cm_code
-    and jh_code = l_job_code
+    SELECT job_header.*, cm_name INTO l_job_header.*, l_customer.cm_name FROM job_header, customer
+        WHERE jh_customer = cm_code AND jh_code = l_job_code
 
-    display by name l_job_header.*
-    display by name l_customer.cm_name
-    
+    DISPLAY BY NAME l_job_header.*
+    DISPLAY BY NAME l_customer.cm_name
+
     -- Job Detail
-    declare job_detail_curs cursor for
-    select *
-    from job_detail
-    where jd_code = l_job_code
-    order by jd_code, jd_line
+    DECLARE job_detail_curs CURSOR FOR SELECT * FROM job_detail WHERE jd_code = l_job_code ORDER BY jd_code, jd_line
 
-    foreach job_detail_curs into m_job_detail_rec.*
-        let m_job_detail_arr[m_job_detail_arr.getLength()+1].* = m_job_detail_rec.*
-    end foreach
+    FOREACH job_detail_curs INTO m_job_detail_rec.*
+        LET m_job_detail_arr[m_job_detail_arr.getLength() + 1].* = m_job_detail_rec.*
+    END FOREACH
 
     -- Job Note
-    declare job_note_curs cursor for
-    select *
-    from job_note
-    where jn_code = l_job_code
-    order by jn_code, jn_idx
+    DECLARE job_note_curs CURSOR FOR SELECT * FROM job_note WHERE jn_code = l_job_code ORDER BY jn_code, jn_idx
 
-    foreach job_note_curs into m_job_note_rec.*
-        let m_job_note_arr[m_job_note_arr.getLength()+1].* = m_job_note_rec.*
-    end foreach
+    FOREACH job_note_curs INTO m_job_note_rec.*
+        LET m_job_note_arr[m_job_note_arr.getLength() + 1].* = m_job_note_rec.*
+    END FOREACH
 
     -- Job Photo
-    declare job_photo_curs cursor for
-    select *
-    from job_photo
-    where jp_code = l_job_code
-    order by jp_code, jp_idx
+    DECLARE job_photo_curs CURSOR FOR SELECT * FROM job_photo WHERE jp_code = l_job_code ORDER BY jp_code, jp_idx
 
-    locate m_job_photo_rec.jp_photo_data in file "photo.tmp"
-    foreach job_photo_curs into m_job_photo_rec.*
-     #   locate m_job_photo_arr[m_job_photo_arr.getLength()+1].jp_photo_data in memory 
-        let m_job_photo_arr[m_job_photo_arr.getLength()+1].* = m_job_photo_rec.*
-       # call m_job_photo_arr[m_job_photo_arr.getLength()].jp_photo_data.readFile("photo.tmp")
-    end foreach
-    free m_job_photo_rec.jp_photo_data
+    LOCATE m_job_photo_rec.jp_photo_data IN FILE "photo.tmp"
+    FOREACH job_photo_curs INTO m_job_photo_rec.*
+        #   locate m_job_photo_arr[m_job_photo_arr.getLength()+1].jp_photo_data in memory
+        LET m_job_photo_arr[m_job_photo_arr.getLength() + 1].* = m_job_photo_rec.*
+        # call m_job_photo_arr[m_job_photo_arr.getLength()].jp_photo_data.readFile("photo.tmp")
+    END FOREACH
+    FREE m_job_photo_rec.jp_photo_data
 
     -- Job Timesheet
-    declare job_timesheet_curs cursor for
-    select *
-    from job_timesheet
-    where jt_code = l_job_code
-    order by jt_code, jt_idx
+    DECLARE job_timesheet_curs CURSOR FOR SELECT * FROM job_timesheet WHERE jt_code = l_job_code ORDER BY jt_code, jt_idx
 
-    foreach job_timesheet_curs into m_job_timesheet_rec.*
-        let m_job_timesheet_arr[m_job_timesheet_arr.getLength()+1].* = m_job_timesheet_rec.*
-    end foreach
-end function
+    FOREACH job_timesheet_curs INTO m_job_timesheet_rec.*
+        LET m_job_timesheet_arr[m_job_timesheet_arr.getLength() + 1].* = m_job_timesheet_rec.*
+    END FOREACH
+END FUNCTION
 
-function show_photo(l_jp_code, l_jp_idx)
-define l_jp_code like job_photo.jp_code
-define l_jp_idx like job_photo.jp_idx
+FUNCTION show_photo(l_jp_code, l_jp_idx)
+    DEFINE l_jp_code LIKE job_photo.jp_code
+    DEFINE l_jp_idx LIKE job_photo.jp_idx
 
-define b byte
-    locate b in file "photo.jpg"
-    select jp_photo_data
-    into b
-    from job_photo
-    where jp_code = l_jp_code
-    and jp_idx = l_jp_idx
+    DEFINE b BYTE
+    LOCATE b IN FILE "photo.jpg"
+    SELECT jp_photo_data INTO b FROM job_photo WHERE jp_code = l_jp_code AND jp_idx = l_jp_idx
 
-    if status = notfound then
-        clear show_photo
-    else
-        display "photo.jpg" to show_photo
-    end if
-  #  free b
-end function
-
+    IF status = NOTFOUND THEN
+        CLEAR show_photo
+    ELSE
+        DISPLAY "photo.jpg" TO show_photo
+    END IF
+    #  free b
+END FUNCTION
