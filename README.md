@@ -1,6 +1,8 @@
 # pool_doctors_web
+
+# :warning: DEPRECATED :warning:
+
 The Web Enquiry program for the Pool Doctors Genero Mobile demo application
 
-TODO: Add .sql to create a database if one is not present already
-
-TODO: Update to Genero 3.0, should be able to handle photos properly know without the current limitations
+This has been consolidated into https://github.com/FourjsGenero/pool_doctors_server
+Please use the example there
